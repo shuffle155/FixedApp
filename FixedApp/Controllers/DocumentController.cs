@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using HashidsNet;
 using FixedApp.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace FixedApp.Controllers
 {
@@ -21,6 +22,23 @@ namespace FixedApp.Controllers
             _hashids = hashids;
         }
 
+        private async Task<Document?> GetDocumentAsync(string hashId)
+        {
+            var decodedId = _hashids.Decode(hashId);
+            if (decodedId.Length == 0)
+            {
+                return null;
+            }
+            int id = decodedId[0];
+            var document = await _context.Documents
+                .FirstOrDefaultAsync(d => d.Id == id);
+            if (document == null)
+            {
+                return null;
+            }
+            return document;
+        }
+
         [Authorize]
         public IActionResult Index()
         {
@@ -36,55 +54,85 @@ namespace FixedApp.Controllers
                 documents = _context.Documents.Where(d => d.OwnerId == uid)
                     .ToList();
             }
+            ViewBag.Hashids = _hashids;
             return View(documents);
         }
 
         [Authorize]
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(string hashId)
         {
-            var document = _context.Documents.FirstOrDefault(d => d.Id == id);
+            Document document = await GetDocumentAsync(hashId);
             if (document == null)
             {
                 return NotFound();
             }
+            var authRes = await _authorizationService
+                .AuthorizeAsync(User, document, new IsOwnerRequirement());
+            if (!authRes.Succeeded)
+            {
+                return Forbid();
+            }
             return View(document);
         }
 
-        [Authorize(Roles = "Admin, User")]
+        [Authorize]
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(string hashId)
         {
-            var document = _context.Documents.FirstOrDefault(d => d.Id == id);
+            Document document = await GetDocumentAsync(hashId);
             if (document == null)
             {
                 return NotFound();
             }
+            var authRes = await _authorizationService
+                .AuthorizeAsync(User, document, new IsOwnerRequirement());
+            if (!authRes.Succeeded)
+            {
+                return Forbid();
+            }
+            ViewBag.HashId = _hashids.Encode(document.Id);
             return View(document);
         }
 
-        [Authorize(Roles = "Admin, User")]
+        [Authorize]
         [HttpPost]
-        public IActionResult Edit(int id, string content)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(string hashId, string content)
         {
-            var document = _context.Documents.FirstOrDefault(d => d.Id == id);
+            Document document = await GetDocumentAsync(hashId);
             if (document == null)
             {
                 return NotFound();
+            }
+            var authRes = await _authorizationService
+                .AuthorizeAsync(User, document, new IsOwnerRequirement());
+            if (!authRes.Succeeded)
+            {
+                return Forbid();
             }
             document.Content = content;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return RedirectToAction("Index");
         }
 
-        public IActionResult Delete(int id)
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(string hashId)
         {
-            var document = _context.Documents.FirstOrDefault(d => d.Id == id);
+            Document document = await GetDocumentAsync(hashId);
             if (document == null)
             {
                 return NotFound();
             }
+            var authRes = await _authorizationService
+                .AuthorizeAsync(User, document, new IsOwnerRequirement());
+            if (!authRes.Succeeded)
+            {
+                return Forbid();
+            }
             _context.Documents.Remove(document);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return RedirectToAction("Index");
         }
     }

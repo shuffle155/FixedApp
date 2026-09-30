@@ -3,7 +3,7 @@
 	ViewData["Title"] = "Edit document";
 }
 <form method="post" asp-action="Edit" class="mt-3">
-	<input type="hidden" name="id" value="@Model.Id" />
+	<input type="hidden" name="hashId" value="@ViewBag.HashId" />
 	<input type="text" name="title" value="@Model.Title" disabled />
 	<div class="mb-3">
 		<label for="content" class="form-label">New content:</label>
