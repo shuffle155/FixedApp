@@ -1,0 +1,45 @@
+﻿@{
+	ViewData["Title"] = "Project information";
+}
+<h1>@ViewData["Title"]</h1>
+
+<div class="alert alert-info" role="alert">
+	<h5 class="alert-heading">Research topic</h5>
+	<p class="mb-0">Detecting access control vulnerabilities for web applications using role-based request analysis</p>
+</div>
+<div class="card mt-3">
+	<div class="card-body">
+		<h5 class="card-title">Project description</h5>
+		<p class="card-text">This is a web application version that incorporates security mechanisms to remediate the Broken Access Control vulnerabilities present in the VulnerableApp version.</p>
+		<table class="table table-bordered mt-3">
+			<thead>
+				<tr>
+					<th scope="col">Feature</th>
+					<th scope="col">Description</th>
+					<th scope="col">Framework</th>
+					<th scope="col">Protection mechanism</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Horizontal access control</td>
+					<td>Users can only access resources and actions that they are explicitly authorized to use</td>
+					<td>ASP.NET Core MVC</td>
+					<td>Resource-based authorization</td>
+				</tr>
+				<tr>
+					<td>Vertical access control</td>
+					<td>Users can only access resources and actions that are within their privilege level</td>
+					<td>ASP.NET Core MVC</td>
+					<td>Role-based authorization</td>
+				</tr>
+				<tr>
+					<td>IDOR prevention</td>
+					<td>Prevents Insecure Direct Object Reference vulnerabilities by validating user access to requested resources</td>
+					<td>HashidsNet</td>
+					<td>ID obfuscation</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>

@@ -22,7 +22,7 @@ namespace FixedApp.Controllers
             _hashids = hashids;
         }
 
-        private async Task<Document?> GetDocumentAsync(string hashId)
+        private async Task<Document> GetDocumentAsync(string hashId)
         {
             var decodedId = _hashids.Decode(hashId);
             if (decodedId.Length == 0)

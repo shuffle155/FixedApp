@@ -36,7 +36,7 @@ namespace FixedApp.Controllers
                 {
                     claims.Add(new Claim(ClaimTypes.Role, role.RoleName));
                 }
-                ClaimsIdentity identity = new ClaimsIdentity(claims, 
+                ClaimsIdentity identity = new ClaimsIdentity(claims,
                     "BacCookieAuth");
                 ClaimsPrincipal principal = new ClaimsPrincipal(identity);
                 await HttpContext.SignInAsync("BacCookieAuth", principal);
