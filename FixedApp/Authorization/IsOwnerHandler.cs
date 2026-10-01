@@ -6,7 +6,8 @@ namespace FixedApp.Authorization
 {
     public class IsOwnerHandler : AuthorizationHandler<IsOwnerRequirement, Document>
     {
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, IsOwnerRequirement requirement, Document resource)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context
+            , IsOwnerRequirement requirement, Document resource)
         {
             if (!context.User.Identity.IsAuthenticated)
             {

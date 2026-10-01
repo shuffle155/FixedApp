@@ -1,4 +1,5 @@
 using FixedApp.Authorization;
+using FixedApp.Middlewares;
 using FixedApp.Models;
 using HashidsNet;
 using Microsoft.AspNetCore.Authorization;
@@ -28,6 +29,8 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
 }
 app.UseStaticFiles();
+
+app.UseMiddleware<PerfLoggingMdw>();
 
 app.UseRouting();
 

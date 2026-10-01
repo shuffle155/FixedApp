@@ -10,27 +10,27 @@ namespace FixedApp.Controllers
 {
     public class DocumentController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IAuthorizationService _authorizationService;
-        private readonly IHashids _hashids;
+        private readonly ApplicationDbContext context;
+        private readonly IAuthorizationService authorizationService;
+        private readonly IHashids hashids;
 
         public DocumentController(ApplicationDbContext context,
             IAuthorizationService authorizationService, IHashids hashids)
         {
-            _context = context;
-            _authorizationService = authorizationService;
-            _hashids = hashids;
+            this.context = context;
+            this.authorizationService = authorizationService;
+            this.hashids = hashids;
         }
 
         private async Task<Document> GetDocumentAsync(string hashId)
         {
-            var decodedId = _hashids.Decode(hashId);
+            var decodedId = hashids.Decode(hashId);
             if (decodedId.Length == 0)
             {
                 return null;
             }
             int id = decodedId[0];
-            var document = await _context.Documents
+            var document = await context.Documents
                 .FirstOrDefaultAsync(d => d.Id == id);
             if (document == null)
             {
@@ -42,19 +42,19 @@ namespace FixedApp.Controllers
         [Authorize]
         public IActionResult Index()
         {
-            var documents = _context.Documents.ToList();
+            var documents = context.Documents.ToList();
             var userId = User.FindFirst(ClaimTypes.NameIdentifier);
             if (User.IsInRole("Admin"))
             {
-                documents = _context.Documents.ToList();
+                documents = context.Documents.ToList();
             }
             else
             {
                 int uid = int.Parse(userId.Value);
-                documents = _context.Documents.Where(d => d.OwnerId == uid)
+                documents = context.Documents.Where(d => d.OwnerId == uid)
                     .ToList();
             }
-            ViewBag.Hashids = _hashids;
+            ViewBag.Hashids = hashids;
             return View(documents);
         }
 
@@ -66,7 +66,7 @@ namespace FixedApp.Controllers
             {
                 return NotFound();
             }
-            var authRes = await _authorizationService
+            var authRes = await authorizationService
                 .AuthorizeAsync(User, document, new IsOwnerRequirement());
             if (!authRes.Succeeded)
             {
@@ -84,13 +84,13 @@ namespace FixedApp.Controllers
             {
                 return NotFound();
             }
-            var authRes = await _authorizationService
+            var authRes = await authorizationService
                 .AuthorizeAsync(User, document, new IsOwnerRequirement());
             if (!authRes.Succeeded)
             {
                 return Forbid();
             }
-            ViewBag.HashId = _hashids.Encode(document.Id);
+            ViewBag.HashId = hashids.Encode(document.Id);
             return View(document);
         }
 
@@ -104,14 +104,14 @@ namespace FixedApp.Controllers
             {
                 return NotFound();
             }
-            var authRes = await _authorizationService
+            var authRes = await authorizationService
                 .AuthorizeAsync(User, document, new IsOwnerRequirement());
             if (!authRes.Succeeded)
             {
                 return Forbid();
             }
             document.Content = content;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return RedirectToAction("Index");
         }
 
@@ -125,14 +125,14 @@ namespace FixedApp.Controllers
             {
                 return NotFound();
             }
-            var authRes = await _authorizationService
+            var authRes = await authorizationService
                 .AuthorizeAsync(User, document, new IsOwnerRequirement());
             if (!authRes.Succeeded)
             {
                 return Forbid();
             }
-            _context.Documents.Remove(document);
-            await _context.SaveChangesAsync();
+            context.Documents.Remove(document);
+            await context.SaveChangesAsync();
             return RedirectToAction("Index");
         }
     }
